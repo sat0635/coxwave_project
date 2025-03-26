@@ -14,7 +14,6 @@ output_file = "faq_answer_question_pair_with_categories_v4.jsonl"
 data = []
 texts = []
 
-
 # ref https://gist.github.com/spikeekips/40eea22ef4a89f629abd87eed535ac6a
 korean_stopwords = [
     "해당", "가", "가까스로", "가령", "각", "각각", "각자", "같다", "같이", "것", "것들", "게다가", "겨우", "결국", "결론을 낼 수 있다", 
@@ -110,7 +109,7 @@ for topic_id in topic_info["Topic"]:
     words = [word for word, _ in topic_model.get_topic(topic_id)[:3]]
     topic_keywords[topic_id] = words
 
-# add categories
+# add categories to original jsonl
 for idx, item in enumerate(data):
     topic_id = topics[idx]
     combined_text = item["question"] + " " + item["answer"]

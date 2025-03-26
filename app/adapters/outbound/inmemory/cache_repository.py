@@ -7,13 +7,12 @@ import json
 class InMemoryCacheRepository(CacheRepository):
     def __init__(self):
         base_dir = os.path.dirname(__file__)
-        embedding_cache_path = os.path.join(base_dir, "embedding_cache.jsonl")
-        self.embedding_cache_path = embedding_cache_path
+        self.embedding_cache_path = os.path.join(base_dir, "embedding_cache_v3.jsonl")
         self.embedding_cache = {}
-        if not os.path.exists(embedding_cache_path):
+        if not os.path.exists(self.embedding_cache_path):
             return
 
-        with open(embedding_cache_path, "r", encoding="utf-8") as f:
+        with open(self.embedding_cache_path, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
                 try:
                     chunk_embedding = json.loads(line)
@@ -31,7 +30,13 @@ class InMemoryCacheRepository(CacheRepository):
 
     def set_embedding(self, key: str, value: any):
         self.embedding_cache[key] = value
-        with open(self.embedding_cache_path, "a", encoding="utf-8") as f:
-            json.dump({chunk: embedding}, f)
-            f.write("\n")
+
+        return
+
+    def save_embedding_cache_to_file(self):
+        with open(self.embedding_cache_path, "w", encoding="utf-8") as f:
+            for key, value in self.embedding_cache.items():
+                json.dump({key: value}, f, ensure_ascii=False)
+                f.write("\n")
+
         return
