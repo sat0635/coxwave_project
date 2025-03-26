@@ -1,22 +1,30 @@
 from application.ports.session_repository import SessionRepository
 from domain.session import Session
+from cryptography.fernet import Fernet
+
 import uuid
+import time
+import hashlib, base64
 
 class InMemorySessionRepository(SessionRepository):
-    def __init__(self):
+    def __init__(self, session_secret_key: str):
         self.sessions = {}
+        self.session_secret_key = session_secret_key
+        self.fernet = Fernet(base64.urlsafe_b64encode(hashlib.sha256(self.session_secret_key.encode()).digest()))
 
-    def create_session(self) -> str:
-        session_id = str(uuid.uuid4())
-        self.sessions[session_id] = Session(session_id=session_id)
-        return session_id
+    def create_session_id(self, user_id: str) -> str:
+        timestamp_ms = int(time.time() * 1000)
+        unique_id = uuid.uuid4().hex
 
-    def get_session(self, session_id: str) -> Session:
-        return self.sessions.get(session_id)
+        session_id = f"{timestamp_ms}_{unique_id}"
 
-    def save_session(self, session: Session) -> None:
-        self.sessions[session.session_id] = session
+        self.sessions[session_id] = Session(
+            session_id=session_id,
+            user_id=user_id
+        )
+        encrypted_session_id = self.fernet.encrypt(session_id.encode()).decode()
+        return encrypted_session_id
 
-    def delete_session(self, session_id: str) -> None:
-        if session_id in self.sessions:
-            del self.sessions[session_id]
+    def get_session(self, encryped_session_id: str) -> Session:
+        session_id = self.fernet.decrypt(encryped_session_id).decode()
+        return self.sessions[session_id]
