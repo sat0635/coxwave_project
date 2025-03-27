@@ -1,18 +1,13 @@
-from typing import List, Dict, Any
-import chromadb
-import os
-import json
-import re
-from kiwipiepy import Kiwi
-from chromadb.config import Settings
-from chromadb.api.types import Documents, Embeddings, Metadatas, IDs
-from chromadb.api.models.Collection import Collection
-
 from application.ports.retriever_repository import RetrieverRepository
 from application.ports.embedding_repository import EmbeddingRepository
 from application.ports.cache_repository import CacheRepository
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Dict, Any
+from kiwipiepy import Kiwi
+from chromadb.api.models.Collection import Collection
+
+import chromadb, os, json, re
 
 class ChromaRetrieverRepository(RetrieverRepository):
     def __init__(self, embedding_repo: EmbeddingRepository, cache_repo: CacheRepository):
@@ -20,13 +15,13 @@ class ChromaRetrieverRepository(RetrieverRepository):
         self.embedding_repo = embedding_repo
         self.cache_repo = cache_repo
 
-    def _split_sentences(self, text):
+    def __split_sentences(self, text):
         kiwi = Kiwi()
         sentences = kiwi.split_into_sents(text)
 
         return [s.text for s in sentences]
 
-    def _create_sentence_chunks(self, sentences, window_size=3, overlap=1):
+    def __create_sentence_chunks(self, sentences, window_size=3, overlap=1):
         chunks = []
         start = 0
         step = window_size - overlap
@@ -41,7 +36,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         return chunks
     
-    def _clean_text(self, text: str) -> str:
+    def __clean_text(self, text: str) -> str:
         """
         Remove special characters and invisible unicode symbols from the text.
         Keeps Korean, English, digits, and whitespace only.
@@ -58,19 +53,19 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         return text.strip()
 
-    def _generate_and_insert_vectors(self, collection: Collection, target_text: str, answer: str, question: str, categories: List, id: str):
+    def __generate_and_insert_vectors(self, collection: Collection, target_text: str, answer: str, question: str, categories: List, id: str):
         # split sentent and make overlapped chunk
-        sentences = self._split_sentences(self._clean_text(target_text))
+        sentences = self.__split_sentences(self._clean_text(target_text))
         chunks = []
         if len(sentences) >= 3:
-            chunks = self._create_sentence_chunks(sentences, window_size=2, overlap=1)
+            chunks = self.__create_sentence_chunks(sentences, window_size=2, overlap=1)
         elif len(sentences) == 2:
             chunks = [' '.join(sentences)]
         else:
             chunks = sentences
 
         new_chunks = [chunk for chunk in chunks if self.cache_repo.get_embedding(chunk) is None]
-        print(new_chunks)
+
         if new_chunks:
             new_embeddings = self.embedding_repo.text_to_vector(new_chunks)
             for chunk, embedding in zip(new_chunks, new_embeddings):
@@ -96,21 +91,21 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         return
 
-    def _process_line(self, collection: Collection, line: str, idx: int):
+    def __process_line(self, collection: Collection, line: str, idx: int):
         data = json.loads(line)
         question = data.get("question")
         answer = data.get("answer")
         categories = data.get("categories", [])
 
-        self._generate_and_insert_vectors(collection, question, answer, question, categories, f"question_{idx}")
-        self._generate_and_insert_vectors(collection, answer, answer, question, categories, f"answer_{idx}")
+        self.__generate_and_insert_vectors(collection, question, answer, question, categories, f"question_{idx}")
+        self.__generate_and_insert_vectors(collection, answer, answer, question, categories, f"answer_{idx}")
 
-    def _process_file(self, file_path: str, collection: Collection):
+    def __process_file(self, file_path: str, collection: Collection):
         futures = []
         with ThreadPoolExecutor(max_workers=8) as executor:
             with open(file_path, "r", encoding="utf-8") as f:
                 for idx, line in enumerate(f):
-                    future = executor.submit(self._process_line, collection, line, idx)
+                    future = executor.submit(self.__process_line, collection, line, idx)
                     futures.append(future)
 
             for future in as_completed(futures):
@@ -134,7 +129,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
         base_dir = os.path.dirname(__file__)
         file_path = os.path.join(base_dir, file_name)
 
-        self._process_file(file_path, collection)
+        self.__process_file(file_path, collection)
         
         #save cache data to file
         self.cache_repo.save_embedding_cache_to_file()

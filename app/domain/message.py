@@ -1,12 +1,12 @@
-from typing import List, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 @dataclass
 class Message:
-    writer: str
+    session_id: str
+    writer_id: str
     message_type: int
     content: str
-    content_vector: List[float]
-    created_at: int
-    score: int
+    created_at: str = None
+    score: float = 0
+    id: int = 0
 
