@@ -1,4 +1,5 @@
 from application.ports.embedding_repository import EmbeddingRepository
+
 from typing import List
 from openai import OpenAI
 

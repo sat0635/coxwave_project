@@ -1,6 +1,5 @@
 from application.ports.cache_repository import CacheRepository
-from domain.session import Session
-import uuid
+
 import os
 import json
 
@@ -9,6 +8,7 @@ class InMemoryCacheRepository(CacheRepository):
         base_dir = os.path.dirname(__file__)
         self.embedding_cache_path = os.path.join(base_dir, "embedding_cache_v3.jsonl")
         self.embedding_cache = {}
+        self.message_lock_cache = {}
         if not os.path.exists(self.embedding_cache_path):
             return
 
@@ -40,3 +40,15 @@ class InMemoryCacheRepository(CacheRepository):
                 f.write("\n")
 
         return
+    
+    def lock_session_message(self, session_id: str):
+        self.message_lock_cache[session_id] = True
+
+    def unlock_session_message(self, session_id: str):
+        self.message_lock_cache[session_id] = False
+
+    def is_session_message_locked(self, session_id: str) -> bool:
+        if session_id in self.message_lock_cache:
+            return self.message_lock_cache[session_id]
+        
+        return False
