@@ -1,10 +1,8 @@
 from application.ports.session_repository import SessionRepository
 from domain.session import Session
-from cryptography.fernet import Fernet
 
-import uuid
-import time
-import hashlib, base64
+from cryptography.fernet import Fernet
+import uuid, time, hashlib, base64
 
 class InMemorySessionRepository(SessionRepository):
     def __init__(self, session_secret_key: str):
