@@ -11,11 +11,6 @@ unzip chroma_db_chunk_v3.zip
 ```
 
 ```
-#download https://drive.google.com/file/d/1HqjJ0MMmDqm0vpKFaqt1O9QhHvzoLv90/view?usp=drive_link
-mv embedding_cache_v3.jsonl app/adapters/outbound/inmemory/
-```
-
-```
 #make .env file
 mv .env app/
 ```
