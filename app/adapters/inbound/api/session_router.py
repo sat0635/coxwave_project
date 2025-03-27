@@ -1,21 +1,16 @@
 from fastapi import APIRouter, Response
 from application.services.session_service import SessionService
-
+from fastapi import APIRouter, Response, Header, HTTPException, Depends
+from cryptography.fernet import Fernet
+from datetime import datetime, timedelta
+from application.services.session_service import SessionService
 router = APIRouter()
 
-def get_session_router(service: SessionService) -> APIRouter:
+def get_session_router(session_service: SessionService) -> APIRouter:
     router = APIRouter()
 
     @router.post("/session")
-    def create_session(response: Response):
-        return {"session_id": "new_session_id"}
-
-    @router.get("/session/{id}")
-    def get_session(id: str, response: Response):
-        return {"session_id": id}
-
-    @router.delete("/session/{id}")
-    def close_session(id: str, response: Response):
-        return {"session_id": id}
+    def start_session(oauth_token: str = Header(..., alias="X-OAuth-Token")):
+        return session_service.start_session(oauth_token)
 
     return router
