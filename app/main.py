@@ -18,9 +18,9 @@ app = FastAPI()
 session_repo = InMemorySessionRepository(settings.session_secret_key)
 cache_repo = InMemoryCacheRepository()
 message_repo = InMemoryMessageRepository()
-embedding_repo = OpenaiEmbeddingRepository(api_key=settings.openai_api_key, model=settings.embedding_model)
+embedding_repo = OpenaiEmbeddingRepository(settings.openai_api_key, settings.embedding_model)
 retriever_repo = ChromaRetrieverRepository(embedding_repo, cache_repo)
-llm_repo = OpenaiLLMRepository(api_key=settings.openai_api_key, model=settings.llm_model, message_repo=message_repo)
+llm_repo = OpenaiLLMRepository(settings.openai_api_key, settings.llm_model, message_repo)
 
 # service
 session_service = SessionService(session_repo)

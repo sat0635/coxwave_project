@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Response
 from application.services.session_service import SessionService
-from fastapi import APIRouter, Response, Header, HTTPException, Depends
-from cryptography.fernet import Fernet
-from datetime import datetime, timedelta
 from application.services.session_service import SessionService
+
+from fastapi import APIRouter, Header
+
 router = APIRouter()
 
 def get_session_router(session_service: SessionService) -> APIRouter:
