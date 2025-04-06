@@ -1,5 +1,5 @@
-from application.services.chat_service import ChatService
-from application.services.session_service import SessionService
+from app.application.services.chat_service import ChatService
+from app.application.services.session_service import SessionService
 
 from pydantic import BaseModel
 from fastapi import APIRouter, Header

@@ -1,6 +1,6 @@
-from application.ports.retriever_repository import RetrieverRepository
-from application.ports.embedding_repository import EmbeddingRepository
-from application.ports.cache_repository import CacheRepository
+from app.application.ports.retriever_repository import RetrieverRepository
+from app.application.ports.embedding_repository import EmbeddingRepository
+from app.application.ports.cache_repository import CacheRepository
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any

@@ -1,5 +1,5 @@
-from application.ports.session_repository import SessionRepository
-from domain.session import Session
+from app.application.ports.session_repository import SessionRepository
+from app.domain.session import Session
 
 from cryptography.fernet import Fernet
 import uuid, time, hashlib, base64

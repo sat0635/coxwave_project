@@ -1,4 +1,4 @@
-from domain.message import Message
+from app.domain.message import Message
 
 from abc import ABC, abstractmethod
 from typing import List

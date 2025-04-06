@@ -1,5 +1,5 @@
-from application.services.session_service import SessionService
-from application.services.session_service import SessionService
+from app.application.services.session_service import SessionService
+from app.application.services.session_service import SessionService
 
 from fastapi import APIRouter, Header
 

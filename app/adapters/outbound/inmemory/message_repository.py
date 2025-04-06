@@ -1,5 +1,5 @@
-from application.ports.message_repository import MessageRepository
-from domain.message import Message
+from app.application.ports.message_repository import MessageRepository
+from app.domain.message import Message
 
 from typing import List
 

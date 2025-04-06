@@ -1,0 +1,33 @@
+[project]
+name = "coxwave-project"
+packages = [{ include = "app" }]
+version = "0.1.0"
+description = "naver smartstore CS chatbot server"
+authors = [
+    {name = "Dongju",email = "sat0635@naver.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+openai = "^1.70.0"
+uvicorn = "^0.34.0"
+chromadb = "0.6.3"
+pydantic-settings = "^2.8.1"
+cryptography = "^44.0.2"
+kiwipiepy = "^0.20.4"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+accelerate = "^1.6.0"
+llvmlite = "^0.44.0"
+bertopic = "^0.17.0"

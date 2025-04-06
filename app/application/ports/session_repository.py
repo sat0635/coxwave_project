@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from domain.session import Session
+from app.domain.session import Session
 
 class SessionRepository(ABC):
     @abstractmethod
