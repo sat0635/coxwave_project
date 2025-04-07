@@ -1,5 +1,6 @@
 from app.application.ports.session_repository import SessionRepository
 
+
 class SessionService:
     def __init__(self, session_repo: SessionRepository):
         self.session_repo = session_repo

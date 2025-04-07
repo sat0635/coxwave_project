@@ -4,7 +4,7 @@ packages = [{ include = "app" }]
 version = "0.1.0"
 description = "naver smartstore CS chatbot server"
 authors = [
-    {name = "Dongju",email = "sat0635@naver.com"}
+  {name = "Dongju",email = "sat0635@naver.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
@@ -31,3 +31,34 @@ optional = true
 accelerate = "^1.6.0"
 llvmlite = "^0.44.0"
 bertopic = "^0.17.0"
+ruff = "^0.11.4"
+
+[tool.ruff]
+target-version = "py312"
+
+exclude = [
+  "__pycache__",
+]
+
+fix = true
+
+[tool.ruff.lint]
+select = [
+  "E4",  # pycodestyle: Import formatting issues
+  "E7",  # pycodestyle: Indentation issues
+  "E9",  # pycodestyle: Syntax errors
+  "F",   # pyflakes: Undefined names, unused imports, etc.
+  "I",   # isort: Import sorting
+  "B",   # flake8-bugbear: Common bugs and design problems
+]
+
+# Avoid enforcing line-length violations
+ignore = ["E501"]
+
+# Avoid trying to fix flake8-bugbear (`B`) violations.
+unfixable = ["B"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+indent-style = "space"

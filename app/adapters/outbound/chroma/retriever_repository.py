@@ -1,13 +1,17 @@
-from app.application.ports.retriever_repository import RetrieverRepository
-from app.application.ports.embedding_repository import EmbeddingRepository
-from app.application.ports.cache_repository import CacheRepository
-
+import json
+import os
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any
-from kiwipiepy import Kiwi
-from chromadb.api.models.Collection import Collection
+from typing import Any
 
-import chromadb, os, json, re
+import chromadb
+from chromadb.api.models.Collection import Collection
+from kiwipiepy import Kiwi
+
+from app.application.ports.cache_repository import CacheRepository
+from app.application.ports.embedding_repository import EmbeddingRepository
+from app.application.ports.retriever_repository import RetrieverRepository
+
 
 class ChromaRetrieverRepository(RetrieverRepository):
     def __init__(self, embedding_repo: EmbeddingRepository, cache_repo: CacheRepository):
@@ -43,7 +47,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
         """
 
         # Replace non-breaking space (\xa0) with normal space
-        text = text.replace('\xa0', ' ')
+        text = text.replace("\xa0", " ")
 
         # Remove common special characters (except letters, digits, and whitespace)
         text = re.sub(r"[^\w\s가-힣]", "", text)
@@ -53,14 +57,14 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         return text.strip()
 
-    def __generate_and_insert_vectors(self, collection: Collection, target_text: str, answer: str, question: str, categories: List, id: str):
+    def __generate_and_insert_vectors(self, collection: Collection, target_text: str, answer: str, question: str, categories: list, id: str):
         # split sentent and make overlapped chunk
-        sentences = self.__split_sentences(self._clean_text(target_text))
+        sentences = self.__split_sentences(self.__clean_text(target_text))
         chunks = []
         if len(sentences) >= 3:
             chunks = self.__create_sentence_chunks(sentences, window_size=2, overlap=1)
         elif len(sentences) == 2:
-            chunks = [' '.join(sentences)]
+            chunks = [" ".join(sentences)]
         else:
             chunks = sentences
 
@@ -68,7 +72,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         if new_chunks:
             new_embeddings = self.embedding_repo.text_to_vector(new_chunks)
-            for chunk, embedding in zip(new_chunks, new_embeddings):
+            for chunk, embedding in zip(new_chunks, new_embeddings, strict=False):
                 self.cache_repo.set_embedding(chunk, embedding)
 
         metadata = [{
@@ -103,7 +107,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
     def __process_file(self, file_path: str, collection: Collection):
         futures = []
         with ThreadPoolExecutor(max_workers=8) as executor:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 for idx, line in enumerate(f):
                     future = executor.submit(self.__process_line, collection, line, idx)
                     futures.append(future)
@@ -121,7 +125,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
             print("chromadb already initialized. Skipping.")
             return
 
-        collection_name = f"naver_smart_store_qna"
+        collection_name = "naver_smart_store_qna"
         collection = self.client.get_or_create_collection(name=collection_name)
 
         print("chromadb init start")
@@ -136,7 +140,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         print("✅ chromadb init done")
 
-    def search(self, query_vector: List[float], top_k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query_vector: list[float], top_k: int = 5) -> list[dict[str, Any]]:
         collection = self.client.get_collection(name="naver_smart_store_qna")
         result = collection.query(
             query_embeddings=query_vector,

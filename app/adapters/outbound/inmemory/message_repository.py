@@ -1,9 +1,8 @@
+import sqlite3
+
 from app.application.ports.message_repository import MessageRepository
 from app.domain.message import Message
 
-from typing import List
-
-import sqlite3
 
 class InMemoryMessageRepository(MessageRepository):
     def __init__(self):
@@ -36,7 +35,7 @@ class InMemoryMessageRepository(MessageRepository):
         ))
         self.conn.commit()
 
-    def select_by_session(self, session_id: str) -> List[Message]:
+    def select_by_session(self, session_id: str) -> list[Message]:
         cursor = self.conn.cursor()
         cursor.execute("""
             SELECT id, session_id, writer_id, message_type, content, created_at, score

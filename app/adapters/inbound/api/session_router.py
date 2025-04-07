@@ -1,7 +1,6 @@
-from app.application.services.session_service import SessionService
-from app.application.services.session_service import SessionService
-
 from fastapi import APIRouter, Header
+
+from app.application.services.session_service import SessionService
 
 router = APIRouter()
 

@@ -1,12 +1,13 @@
+import json
+from collections.abc import Generator
+
+from openai import OpenAI
+
 from app.application.ports.llm_repository import LLMRepository
 from app.application.ports.message_repository import MessageRepository
 from app.domain.constant.chat_role import ChatRole
 from app.domain.constant.message_type import MessageType
 
-from openai import OpenAI
-from typing import Generator, List
-
-import json
 
 class OpenaiLLMRepository(LLMRepository):
     def __init__(self, api_key: str, model: str, message_repo: MessageRepository):
@@ -14,7 +15,7 @@ class OpenaiLLMRepository(LLMRepository):
         self.model = model
         self.message_repo = message_repo
 
-    def __convert_db_messages_to_llm_chat_messages(self, messages: List) -> List:
+    def __convert_db_messages_to_llm_chat_messages(self, messages: list) -> list:
         message_type_role_map = {
             MessageType.SYSTEM: ChatRole.SYSTEM,
             MessageType.USER: ChatRole.USER,
@@ -33,23 +34,23 @@ class OpenaiLLMRepository(LLMRepository):
 
         return chat_messages
 
-    def __make_related_qna_list(self, retrieved_docs: List):
+    def __make_related_qna_list(self, retrieved_docs: list):
         qna_list = []
         for retrieved_doc in retrieved_docs:
             metadata = retrieved_doc.get("metadata", {})
             score = retrieved_doc.get("score", 0)
 
             qna = json.dumps({
-                'score': score,
-                '질문': metadata["original_question"],
-                '답변': metadata["answer"],
-                '주제': metadata["topics"]
+                "score": score,
+                "질문": metadata["original_question"],
+                "답변": metadata["answer"],
+                "주제": metadata["topics"]
             }, ensure_ascii=False)
 
             qna_list.append(qna)
         return qna_list
 
-    def generate_reply(self, question: str, retrieved_docs: List, prev_messages: List, system_prompt: str) -> Generator[str, None, str]:
+    def generate_reply(self, question: str, retrieved_docs: list, prev_messages: list, system_prompt: str) -> Generator[str, None, str]:
         messages = []
 
         if not prev_messages:

@@ -1,9 +1,10 @@
+from fastapi import APIRouter, Header
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
 from app.application.services.chat_service import ChatService
 from app.application.services.session_service import SessionService
 
-from pydantic import BaseModel
-from fastapi import APIRouter, Header
-from fastapi.responses import StreamingResponse
 
 class SendMessageBody(BaseModel):
     content: str
@@ -14,7 +15,7 @@ def get_chat_router(chat_service: ChatService, session_service: SessionService) 
 
     @router.post("/message")
     def send_message(
-        sendMessageBody: SendMessageBody,
+        send_message_body: SendMessageBody,
         oauth_token: str = Header(..., alias="X-OAuth-Token"),
         encrypted_session_id: str = Header(..., alias="X-Session-Id")
     ):
@@ -24,7 +25,7 @@ def get_chat_router(chat_service: ChatService, session_service: SessionService) 
         user_id = session_service.get_user_id_by_token(oauth_token)
 
         stream = chat_service.generate_reply(
-            sendMessageBody.content,
+            send_message_body.content,
             user_id,
             encrypted_session_id
         )
