@@ -1,7 +1,7 @@
+from abc import ABC, abstractmethod
+
 from app.domain.message import Message
 
-from abc import ABC, abstractmethod
-from typing import List
 
 class MessageRepository(ABC):
     @abstractmethod
@@ -9,5 +9,5 @@ class MessageRepository(ABC):
         pass
 
     @abstractmethod
-    def select_by_session(self, session_id: str) -> List[Message]:
+    def select_by_session(self, session_id: str) -> list[Message]:
         pass

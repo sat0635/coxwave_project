@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Any, Dict
+from typing import Any
+
 
 class RetrieverRepository(ABC):
     @abstractmethod
@@ -7,5 +8,5 @@ class RetrieverRepository(ABC):
         pass
 
     @abstractmethod
-    def search(self, query_vector: List[float], top_k: int) -> List[Dict[str, Any]]:
+    def search(self, query_vector: list[float], top_k: int) -> list[dict[str, Any]]:
         pass

@@ -1,7 +1,8 @@
+import json
+import os
+
 from app.application.ports.cache_repository import CacheRepository
 
-import os
-import json
 
 class InMemoryCacheRepository(CacheRepository):
     def __init__(self):
@@ -12,7 +13,7 @@ class InMemoryCacheRepository(CacheRepository):
         if not os.path.exists(self.embedding_cache_path):
             return
 
-        with open(self.embedding_cache_path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(self.embedding_cache_path, encoding="utf-8", errors="ignore") as f:
             for line in f:
                 try:
                     chunk_embedding = json.loads(line)

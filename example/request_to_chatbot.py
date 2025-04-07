@@ -1,5 +1,6 @@
-import httpx
 import argparse
+
+import httpx
 
 parser = argparse.ArgumentParser(description="Send message to chatbot")
 parser.add_argument("--session_id", required=True, help="Session ID for the request")

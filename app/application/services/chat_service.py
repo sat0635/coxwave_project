@@ -1,14 +1,14 @@
-from app.application.ports.session_repository import SessionRepository
-from app.application.ports.llm_repository import LLMRepository
-from app.application.ports.retriever_repository import RetrieverRepository
-from app.application.ports.embedding_repository import EmbeddingRepository
-from app.application.ports.message_repository import MessageRepository
-from app.application.ports.cache_repository import CacheRepository
-from app.application.ports.session_repository import SessionRepository
-from app.domain.message import Message
-from app.domain.constant.message_type import MessageType
+from collections.abc import Generator
 
-from typing import Generator
+from app.application.ports.cache_repository import CacheRepository
+from app.application.ports.embedding_repository import EmbeddingRepository
+from app.application.ports.llm_repository import LLMRepository
+from app.application.ports.message_repository import MessageRepository
+from app.application.ports.retriever_repository import RetrieverRepository
+from app.application.ports.session_repository import SessionRepository
+from app.domain.constant.message_type import MessageType
+from app.domain.message import Message
+
 
 class ChatService:
     def __init__(self, session_repo: SessionRepository, llm_repo: LLMRepository, retriever_repo: RetrieverRepository,

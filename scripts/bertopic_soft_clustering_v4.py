@@ -1,11 +1,11 @@
 import json
-from tqdm import tqdm
-from bertopic import BERTopic
-from sklearn.feature_extraction.text import CountVectorizer
-from sentence_transformers import SentenceTransformer
-from kiwipiepy import Kiwi
-from collections import Counter
 import re
+from collections import Counter
+
+from bertopic import BERTopic
+from kiwipiepy import Kiwi
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 
 kiwi = Kiwi()
 input_file = "faq_answer_question_pair.jsonl"
@@ -69,7 +69,7 @@ def clean_text(text: str) -> str:
 
     return text.strip()
 
-with open(input_file, 'r', encoding='utf-8') as f:
+with open(input_file, encoding="utf-8") as f:
     for line in f:
         item = json.loads(line)
         combined_text = item["question"] + " " + item["answer"]
@@ -117,7 +117,7 @@ for idx, item in enumerate(data):
 
     #If the prefix contains [], use it as a keyword
     #ex) [네이버쇼핑] 네이버쇼핑 입점 신청은 어떻게 하나요?
-    match = re.match(r'^\[([^\[\]]+)\]', combined_text)
+    match = re.match(r"^\[([^\[\]]+)\]", combined_text)
     high_related_topic = []
     if match is not None:
         high_related_topic.append(match.group(1))
@@ -128,6 +128,6 @@ for idx, item in enumerate(data):
         item["categories"] = high_related_topic+ list(set(topic_keywords.get(topic_id, []) + top_n_nouns[:3]))
 
 # save file
-with open(output_file, 'w', encoding='utf-8') as f:
+with open(output_file, "w", encoding="utf-8") as f:
     for item in data:
         f.write(json.dumps(item, ensure_ascii=False) + "\n")
