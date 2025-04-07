@@ -15,3 +15,6 @@ __pycache__/
 
 # poetry
 poetry.lock
+
+# ruff
+.ruff_cache

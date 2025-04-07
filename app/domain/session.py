@@ -1,7 +1,6 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Session:
+class Session(BaseModel):
     session_id: str
     user_id: str
