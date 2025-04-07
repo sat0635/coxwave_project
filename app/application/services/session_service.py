@@ -1,4 +1,4 @@
-from application.ports.session_repository import SessionRepository
+from app.application.ports.session_repository import SessionRepository
 
 class SessionService:
     def __init__(self, session_repo: SessionRepository):

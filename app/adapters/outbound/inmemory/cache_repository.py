@@ -1,4 +1,4 @@
-from application.ports.cache_repository import CacheRepository
+from app.application.ports.cache_repository import CacheRepository
 
 import os
 import json

@@ -1,7 +1,7 @@
-from application.ports.llm_repository import LLMRepository
-from application.ports.message_repository import MessageRepository
-from domain.constant.chat_role import ChatRole
-from domain.constant.message_type import MessageType
+from app.application.ports.llm_repository import LLMRepository
+from app.application.ports.message_repository import MessageRepository
+from app.domain.constant.chat_role import ChatRole
+from app.domain.constant.message_type import MessageType
 
 from openai import OpenAI
 from typing import Generator, List

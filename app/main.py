@@ -1,15 +1,15 @@
-from adapters.inbound.api.session_router import get_session_router
-from adapters.inbound.api.chat_router import get_chat_router
-from application.services.session_service import SessionService
-from application.services.chat_service import ChatService
-from adapters.outbound.inmemory.session_repository import InMemorySessionRepository
-from adapters.outbound.inmemory.cache_repository import InMemoryCacheRepository
-from adapters.outbound.inmemory.message_repository import InMemoryMessageRepository
-from adapters.outbound.openai.embedding_repository import OpenaiEmbeddingRepository
-from adapters.outbound.openai.llm_repository import OpenaiLLMRepository
-from adapters.outbound.chroma.retriever_repository import ChromaRetrieverRepository
+from app.adapters.inbound.api.session_router import get_session_router
+from app.adapters.inbound.api.chat_router import get_chat_router
+from app.application.services.session_service import SessionService
+from app.application.services.chat_service import ChatService
+from app.adapters.outbound.inmemory.session_repository import InMemorySessionRepository
+from app.adapters.outbound.inmemory.cache_repository import InMemoryCacheRepository
+from app.adapters.outbound.inmemory.message_repository import InMemoryMessageRepository
+from app.adapters.outbound.openai.embedding_repository import OpenaiEmbeddingRepository
+from app.adapters.outbound.openai.llm_repository import OpenaiLLMRepository
+from app.adapters.outbound.chroma.retriever_repository import ChromaRetrieverRepository
+from app.core.config import settings
 
-from core.config import settings
 from fastapi import FastAPI
 
 app = FastAPI()
