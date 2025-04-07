@@ -23,6 +23,7 @@ chromadb = "0.6.3"
 pydantic-settings = "^2.8.1"
 cryptography = "^44.0.2"
 kiwipiepy = "^0.20.4"
+dependency-injector = "4.42.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -62,3 +63,6 @@ unfixable = ["B"]
 quote-style = "double"
 
 indent-style = "space"
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends"]
