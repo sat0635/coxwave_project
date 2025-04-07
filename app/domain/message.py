@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Message:
+class Message(BaseModel):
     session_id: str
     writer_id: str
     message_type: int
