@@ -11,8 +11,15 @@ from app.domain.message import Message
 
 
 class ChatService:
-    def __init__(self, session_repo: SessionRepository, llm_repo: LLMRepository, retriever_repo: RetrieverRepository,
-                 embedding_repo: EmbeddingRepository, message_repo: MessageRepository, cache_repo: CacheRepository):
+    def __init__(
+        self,
+        session_repo: SessionRepository,
+        llm_repo: LLMRepository,
+        retriever_repo: RetrieverRepository,
+        embedding_repo: EmbeddingRepository,
+        message_repo: MessageRepository,
+        cache_repo: CacheRepository,
+    ):
         self.session_repo = session_repo
         self.llm_repo = llm_repo
         self.retriever_repo = retriever_repo
@@ -55,7 +62,10 @@ class ChatService:
             6. 유저와의 이전 대화내용을 참고해서 유저가 무엇을 원하는지를 파악해야해
             7. 유도질문은 항상 ?로 끝나야하고 답변은 항상 .으로 끝나야해
         """
-    def generate_reply(self, message: str, user_id: str, encrypted_session_id: str) -> Generator[str, None, None]:
+
+    def generate_reply(
+        self, message: str, user_id: str, encrypted_session_id: str
+    ) -> Generator[str, None, None]:
         session = self.session_repo.get_session(encrypted_session_id)
         if session.user_id != user_id:
             return "FAILED_VERIFICATION"
@@ -70,7 +80,9 @@ class ChatService:
             retriever_search_results = self.retriever_repo.search(query_embedding)
             prev_messages = self.message_repo.select_by_session(session.session_id)
 
-            stream  = self.llm_repo.generate_reply(message, retriever_search_results, prev_messages, self.system_prompt)
+            stream = self.llm_repo.generate_reply(
+                message, retriever_search_results, prev_messages, self.system_prompt
+            )
             full_reply = ""
 
             for chunk in stream:
@@ -78,24 +90,30 @@ class ChatService:
                 yield chunk
 
             if not prev_messages:
-                self.message_repo.insert(Message(
+                self.message_repo.insert(
+                    Message(
+                        session_id=session.session_id,
+                        writer_id="b1",
+                        message_type=MessageType.SYSTEM,
+                        content=self.system_prompt,
+                    )
+                )
+            self.message_repo.insert(
+                Message(
                     session_id=session.session_id,
-                    writer_id="b1",
-                    message_type=MessageType.SYSTEM,
-                    content=self.system_prompt,
-                ))
-            self.message_repo.insert(Message(
-                session_id=session.session_id,
-                writer_id = session.user_id,
-                message_type = MessageType.USER,
-                content=message
-            ))                
-            self.message_repo.insert(Message(
-                session_id=session.session_id,
-                writer_id = "b2",
-                message_type = MessageType.ASSISTANT,
-                content=full_reply
-            ))
+                    writer_id=session.user_id,
+                    message_type=MessageType.USER,
+                    content=message,
+                )
+            )
+            self.message_repo.insert(
+                Message(
+                    session_id=session.session_id,
+                    writer_id="b2",
+                    message_type=MessageType.ASSISTANT,
+                    content=full_reply,
+                )
+            )
 
         finally:
             self.cache_repo.unlock_session_message(session.session_id)

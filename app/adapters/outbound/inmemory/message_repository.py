@@ -24,20 +24,24 @@ class InMemoryMessageRepository(MessageRepository):
 
     def insert(self, message: Message):
         cursor = self.conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO message (session_id, writer_id, message_type, content)
             VALUES (?, ?, ?, ?)
-        """, (
-            message.session_id,
-            message.writer_id,
-            message.message_type,
-            message.content
-        ))
+        """,
+            (
+                message.session_id,
+                message.writer_id,
+                message.message_type,
+                message.content,
+            ),
+        )
         self.conn.commit()
 
     def select_by_session(self, session_id: str) -> list[Message]:
         cursor = self.conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, session_id, writer_id, message_type, content, created_at, score
             FROM (
                 SELECT id, session_id, writer_id, message_type, content, created_at, score
@@ -47,20 +51,23 @@ class InMemoryMessageRepository(MessageRepository):
                 LIMIT 30
             ) AS recent_messages
             ORDER BY created_at;
-        """, (session_id,))
+        """,
+            (session_id,),
+        )
         rows = cursor.fetchall()
 
         messages = []
         for row in rows:
-            messages.append(Message(
-                id=row["id"],
-                session_id=row["session_id"],
-                writer_id=row["writer_id"],
-                message_type=row["message_type"],
-                content=row["content"],
-                created_at=row["created_at"],
-                score=row["score"]
-            ))
+            messages.append(
+                Message(
+                    id=row["id"],
+                    session_id=row["session_id"],
+                    writer_id=row["writer_id"],
+                    message_type=row["message_type"],
+                    content=row["content"],
+                    created_at=row["created_at"],
+                    score=row["score"],
+                )
+            )
 
         return messages
-

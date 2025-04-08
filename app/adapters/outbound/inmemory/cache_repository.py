@@ -26,7 +26,7 @@ class InMemoryCacheRepository(CacheRepository):
     def get_embedding(self, key: str) -> any:
         if key in self.embedding_cache:
             return self.embedding_cache[key]
-        
+
         return None
 
     def set_embedding(self, key: str, value: any):
@@ -41,7 +41,7 @@ class InMemoryCacheRepository(CacheRepository):
                 f.write("\n")
 
         return
-    
+
     def lock_session_message(self, session_id: str):
         self.message_lock_cache[session_id] = True
 
@@ -51,5 +51,5 @@ class InMemoryCacheRepository(CacheRepository):
     def is_session_message_locked(self, session_id: str) -> bool:
         if session_id in self.message_lock_cache:
             return self.message_lock_cache[session_id]
-        
+
         return False

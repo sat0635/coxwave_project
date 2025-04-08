@@ -11,14 +11,12 @@ args = parser.parse_args()
 url = "http://127.0.0.1:8000/message"
 
 headers = {
-    "X-OAuth-Token": "1", 
+    "X-OAuth-Token": "1",
     "X-Session-Id": args.session_id,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
 }
 
-data = {
-    "content": args.content
-}
+data = {"content": args.content}
 
 with httpx.stream("POST", url, headers=headers, json=data, timeout=None) as response:
     if response.status_code != 200:

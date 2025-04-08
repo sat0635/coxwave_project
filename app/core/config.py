@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     session_secret_key: str
 
     class Config:
-        env_file = "app/.env" 
+        env_file = "app/.env"
+
 
 # static value
 settings = Settings()
