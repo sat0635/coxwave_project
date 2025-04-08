@@ -1,9 +1,8 @@
 import json
-from collections.abc import Generator
 
 from openai import OpenAI
 
-from app.application.ports.llm_repository import LLMRepository
+from app.application.ports.llm_repository import LLMRepository, StructuredReplyResponse
 from app.application.ports.message_repository import MessageRepository
 from app.domain.constant.chat_role import ChatRole
 from app.domain.constant.message_type import MessageType
@@ -56,7 +55,7 @@ class OpenaiLLMRepository(LLMRepository):
         retrieved_docs: list,
         prev_messages: list,
         system_prompt: str,
-    ) -> Generator[str, None, str]:
+    ) -> StructuredReplyResponse:
         messages = []
 
         if not prev_messages:
@@ -74,16 +73,13 @@ class OpenaiLLMRepository(LLMRepository):
             }
         )
 
-        response = self.client.chat.completions.create(
-            model=self.model, messages=messages, temperature=0.2, stream=True
+        response = self.client.beta.chat.completions.parse(
+            model=self.model,
+            messages=messages,
+            temperature=0.2,
+            response_format=StructuredReplyResponse,
         )
 
-        full_reply = ""
-        for chunk in response:
-            content = chunk.choices[0].delta.content if chunk.choices[0].delta else None
-            if content:
-                for char in content:
-                    full_reply += char
-                    yield char
+        response_message = response.choices[0].message.content
 
-        return full_reply
+        return StructuredReplyResponse.model_validate_json(response_message)

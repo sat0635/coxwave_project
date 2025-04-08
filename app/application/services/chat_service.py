@@ -1,12 +1,14 @@
-from collections.abc import Generator
+from starlette import status
 
 from app.application.ports.cache_repository import CacheRepository
 from app.application.ports.embedding_repository import EmbeddingRepository
-from app.application.ports.llm_repository import LLMRepository
+from app.application.ports.llm_repository import LLMRepository, StructuredReplyResponse
 from app.application.ports.message_repository import MessageRepository
 from app.application.ports.retriever_repository import RetrieverRepository
 from app.application.ports.session_repository import SessionRepository
+from app.core.log import get_logger
 from app.domain.constant.message_type import MessageType
+from app.domain.exception import ServerException
 from app.domain.message import Message
 
 
@@ -63,15 +65,66 @@ class ChatService:
             7. 유도질문은 항상 ?로 끝나야하고 답변은 항상 .으로 끝나야해
         """
 
+    def __save_messages(
+        self,
+        session_id: str,
+        user_id: str,
+        user_message: str,
+        answer: str,
+        has_prev_messages: bool,
+    ):
+        if not has_prev_messages:
+            self.message_repo.insert(
+                Message(
+                    session_id=session_id,
+                    writer_id="b1",
+                    message_type=MessageType.SYSTEM,
+                    content=self.system_prompt,
+                )
+            )
+
+        self.message_repo.insert(
+            Message(
+                session_id=session_id,
+                writer_id=user_id,
+                message_type=MessageType.USER,
+                content=user_message,
+            )
+        )
+
+        self.message_repo.insert(
+            Message(
+                session_id=session_id,
+                writer_id="b2",
+                message_type=MessageType.ASSISTANT,
+                content=answer,
+            )
+        )
+        logger = get_logger()
+        logger.debug("messages insert finished")
+
     def generate_reply(
         self, message: str, user_id: str, encrypted_session_id: str
-    ) -> Generator[str, None, None]:
+    ) -> StructuredReplyResponse:
         session = self.session_repo.get_session(encrypted_session_id)
+        if session is None:
+            raise ServerException(
+                user_message="WRONG_SESSION_ID",
+                log_message=f"wrong session id. user_id: {user_id}",
+                http_code=status.HTTP_400_BAD_REQUEST,
+            )
         if session.user_id != user_id:
-            return "FAILED_VERIFICATION"
-
+            raise ServerException(
+                user_message="UNAUTHORIZED",
+                log_message=f"wrong user_id. user_id: {user_id}, session.user_id: {session.user_id}",
+                http_code=status.HTTP_403_FORBIDDEN,
+            )
         if self.cache_repo.is_session_message_locked(session.session_id):
-            return "IN_PROGRESS"
+            raise ServerException(
+                user_message="IN_PROGRESS",
+                log_message=f"session locked. user_id: {user_id}, session_id: {session.session_id}",
+                http_code=status.HTTP_409_CONFLICT,
+            )
 
         self.cache_repo.lock_session_message(session.session_id)
 
@@ -80,40 +133,18 @@ class ChatService:
             retriever_search_results = self.retriever_repo.search(query_embedding)
             prev_messages = self.message_repo.select_by_session(session.session_id)
 
-            stream = self.llm_repo.generate_reply(
+            response_event = self.llm_repo.generate_reply(
                 message, retriever_search_results, prev_messages, self.system_prompt
             )
-            full_reply = ""
-
-            for chunk in stream:
-                full_reply += chunk
-                yield chunk
-
-            if not prev_messages:
-                self.message_repo.insert(
-                    Message(
-                        session_id=session.session_id,
-                        writer_id="b1",
-                        message_type=MessageType.SYSTEM,
-                        content=self.system_prompt,
-                    )
-                )
-            self.message_repo.insert(
-                Message(
-                    session_id=session.session_id,
-                    writer_id=session.user_id,
-                    message_type=MessageType.USER,
-                    content=message,
-                )
+            self.__save_messages(
+                session.session_id,
+                user_id,
+                message,
+                response_event.answer,
+                bool(prev_messages),
             )
-            self.message_repo.insert(
-                Message(
-                    session_id=session.session_id,
-                    writer_id="b2",
-                    message_type=MessageType.ASSISTANT,
-                    content=full_reply,
-                )
-            )
+
+            return response_event
 
         finally:
             self.cache_repo.unlock_session_message(session.session_id)

@@ -7,7 +7,7 @@ authors = [
   {name = "Dongju",email = "sat0635@naver.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -24,6 +24,7 @@ pydantic-settings = "^2.8.1"
 cryptography = "^44.0.2"
 kiwipiepy = "^0.20.4"
 dependency-injector = "4.42.0"
+loguru = "^0.7.3"
 
 [tool.poetry.group.dev]
 optional = true

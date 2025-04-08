@@ -18,9 +18,15 @@ headers = {
 
 data = {"content": args.content}
 
-with httpx.stream("POST", url, headers=headers, json=data, timeout=None) as response:
-    if response.status_code != 200:
-        print(f"\nError: {response.status_code} - {response.text}")
-    else:
-        for chunk in response.iter_text():
-            print(chunk, end="", flush=True)
+try:
+    with httpx.stream(
+        "POST", url, headers=headers, json=data, timeout=None
+    ) as response:
+        if response.status_code >= 400:
+            error_text = response.read().decode("utf-8")
+            print(f"\n❌ Error {response.status_code}:\n{error_text}")
+        else:
+            for chunk in response.iter_text():
+                print(chunk, end="", flush=True)
+except httpx.HTTPError as exc:
+    print(f"\n❗ HTTP Exception occurred: {exc}")
