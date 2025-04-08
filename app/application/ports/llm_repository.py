@@ -1,5 +1,11 @@
 from abc import ABC, abstractmethod
-from collections.abc import Generator
+
+from pydantic import BaseModel
+
+
+class StructuredReplyResponse(BaseModel):
+    answer: str
+    lead_questions: list[str]
 
 
 class LLMRepository(ABC):
@@ -10,5 +16,5 @@ class LLMRepository(ABC):
         retrieved_docs: list,
         prev_messages: list,
         system_prompt: str,
-    ) -> Generator[str, None, str]:
+    ) -> StructuredReplyResponse:
         pass

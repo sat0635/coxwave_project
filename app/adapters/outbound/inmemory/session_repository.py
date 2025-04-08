@@ -31,4 +31,4 @@ class InMemorySessionRepository(SessionRepository):
 
     def get_session(self, encryped_session_id: str) -> Session:
         session_id = self.fernet.decrypt(encryped_session_id).decode()
-        return self.sessions[session_id]
+        return self.sessions.get(session_id)
