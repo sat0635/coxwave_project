@@ -1,4 +1,3 @@
-
 from openai import OpenAI
 
 from app.application.ports.embedding_repository import EmbeddingRepository
@@ -10,8 +9,5 @@ class OpenaiEmbeddingRepository(EmbeddingRepository):
         self.model = model
 
     def text_to_vector(self, texts: list[str]) -> list[list[float]]:
-        response = self.client.embeddings.create(
-            model=self.model,
-            input=texts
-        )
+        response = self.client.embeddings.create(model=self.model, input=texts)
         return [item.embedding for item in response.data]

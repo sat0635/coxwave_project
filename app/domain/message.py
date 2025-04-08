@@ -9,4 +9,3 @@ class Message(BaseModel):
     created_at: str = None
     score: float = 0
     id: int = 0
-

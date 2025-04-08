@@ -44,17 +44,21 @@ korean_stopwords = [
 
 def extract_top_n_nouns(text: str, top_n: int = 6, min_len: int = 2) -> list:
     results = kiwi.analyze(text, top_n=1)[0][0]
-    
+
     nouns = [
-        token.form for token in results
-        if token.tag.startswith("NN") and len(token.form) >= min_len and token.form not in korean_stopwords
+        token.form
+        for token in results
+        if token.tag.startswith("NN")
+        and len(token.form) >= min_len
+        and token.form not in korean_stopwords
     ]
 
     noun_counts = Counter(nouns)
 
     top_nouns = [word for word, _ in noun_counts.most_common(top_n)]
-    
+
     return top_nouns
+
 
 def clean_text(text: str) -> str:
     """
@@ -63,11 +67,12 @@ def clean_text(text: str) -> str:
     """
     # Remove common special characters (except letters, digits, and whitespace)
     text = re.sub(r"[^\w\s가-힣]", "", text)
-    
+
     # Remove invisible unicode characters like \ufeff, \u200b, etc.
     text = re.sub(r"[\u200b-\u200f\u202a-\u202e\ufeff]", "", text)
 
     return text.strip()
+
 
 with open(input_file, encoding="utf-8") as f:
     for line in f:
@@ -79,22 +84,18 @@ with open(input_file, encoding="utf-8") as f:
 # BERTopic clustering
 embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 vectorizer_model = CountVectorizer(
-    ngram_range=(1, 2),
-    stop_words=korean_stopwords,
-    min_df=4,
-    max_df=0.9
+    ngram_range=(1, 2), stop_words=korean_stopwords, min_df=4, max_df=0.9
 )
 
 topic_model = BERTopic(
     embedding_model=embedding_model,
     vectorizer_model=vectorizer_model,
     top_n_words=3,
-    language="multilingual"  # support korean
+    language="multilingual",  # support korean
 )
 
 cleaned_texts = [
-    " ".join(extract_top_n_nouns(clean_text(text), top_n=20))
-    for text in texts
+    " ".join(extract_top_n_nouns(clean_text(text), top_n=20)) for text in texts
 ]
 
 topics, _ = topic_model.fit_transform(cleaned_texts)
@@ -115,8 +116,8 @@ for idx, item in enumerate(data):
     combined_text = item["question"] + " " + item["answer"]
     top_n_nouns = extract_top_n_nouns(combined_text, top_n=6)
 
-    #If the prefix contains [], use it as a keyword
-    #ex) [네이버쇼핑] 네이버쇼핑 입점 신청은 어떻게 하나요?
+    # If the prefix contains [], use it as a keyword
+    # ex) [네이버쇼핑] 네이버쇼핑 입점 신청은 어떻게 하나요?
     match = re.match(r"^\[([^\[\]]+)\]", combined_text)
     high_related_topic = []
     if match is not None:
@@ -125,7 +126,9 @@ for idx, item in enumerate(data):
     if topic_id == -1:
         item["categories"] = high_related_topic + top_n_nouns
     else:
-        item["categories"] = high_related_topic+ list(set(topic_keywords.get(topic_id, []) + top_n_nouns[:3]))
+        item["categories"] = high_related_topic + list(
+            set(topic_keywords.get(topic_id, []) + top_n_nouns[:3])
+        )
 
 # save file
 with open(output_file, "w", encoding="utf-8") as f:

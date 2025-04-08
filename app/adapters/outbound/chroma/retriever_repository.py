@@ -14,8 +14,12 @@ from app.application.ports.retriever_repository import RetrieverRepository
 
 
 class ChromaRetrieverRepository(RetrieverRepository):
-    def __init__(self, embedding_repo: EmbeddingRepository, cache_repo: CacheRepository):
-        self.client = chromadb.PersistentClient(path=os.path.join(os.path.dirname(__file__), "chroma_db_chunk_v3"))
+    def __init__(
+        self, embedding_repo: EmbeddingRepository, cache_repo: CacheRepository
+    ):
+        self.client = chromadb.PersistentClient(
+            path=os.path.join(os.path.dirname(__file__), "chroma_db_chunk_v3")
+        )
         self.embedding_repo = embedding_repo
         self.cache_repo = cache_repo
 
@@ -39,7 +43,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
             start += step
 
         return chunks
-    
+
     def __clean_text(self, text: str) -> str:
         """
         Remove special characters and invisible unicode symbols from the text.
@@ -51,13 +55,21 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         # Remove common special characters (except letters, digits, and whitespace)
         text = re.sub(r"[^\w\s가-힣]", "", text)
-        
+
         # Remove invisible unicode characters like \ufeff, \u200b, etc.
         text = re.sub(r"[\u200b-\u200f\u202a-\u202e\ufeff]", "", text)
 
         return text.strip()
 
-    def __generate_and_insert_vectors(self, collection: Collection, target_text: str, answer: str, question: str, categories: list, id: str):
+    def __generate_and_insert_vectors(
+        self,
+        collection: Collection,
+        target_text: str,
+        answer: str,
+        question: str,
+        categories: list,
+        id: str,
+    ):
         # split sentent and make overlapped chunk
         sentences = self.__split_sentences(self.__clean_text(target_text))
         chunks = []
@@ -68,29 +80,29 @@ class ChromaRetrieverRepository(RetrieverRepository):
         else:
             chunks = sentences
 
-        new_chunks = [chunk for chunk in chunks if self.cache_repo.get_embedding(chunk) is None]
+        new_chunks = [
+            chunk for chunk in chunks if self.cache_repo.get_embedding(chunk) is None
+        ]
 
         if new_chunks:
             new_embeddings = self.embedding_repo.text_to_vector(new_chunks)
             for chunk, embedding in zip(new_chunks, new_embeddings, strict=False):
                 self.cache_repo.set_embedding(chunk, embedding)
 
-        metadata = [{
-            "answer": answer,
-            "original_question": question,
-            "topics": ", ".join(categories)
-        }] * len(chunks)
-
+        metadata = [
+            {
+                "answer": answer,
+                "original_question": question,
+                "topics": ", ".join(categories),
+            }
+        ] * len(chunks)
 
         ids = [f"{id}_{i}" for i in range(len(chunks))]
-        
+
         embeddings = [self.cache_repo.get_embedding(chunk) for chunk in chunks]
 
         collection.add(
-            documents=chunks,
-            embeddings=embeddings,
-            metadatas=metadata,
-            ids=ids
+            documents=chunks, embeddings=embeddings, metadatas=metadata, ids=ids
         )
 
         return
@@ -101,8 +113,12 @@ class ChromaRetrieverRepository(RetrieverRepository):
         answer = data.get("answer")
         categories = data.get("categories", [])
 
-        self.__generate_and_insert_vectors(collection, question, answer, question, categories, f"question_{idx}")
-        self.__generate_and_insert_vectors(collection, answer, answer, question, categories, f"answer_{idx}")
+        self.__generate_and_insert_vectors(
+            collection, question, answer, question, categories, f"question_{idx}"
+        )
+        self.__generate_and_insert_vectors(
+            collection, answer, answer, question, categories, f"answer_{idx}"
+        )
 
     def __process_file(self, file_path: str, collection: Collection):
         futures = []
@@ -117,7 +133,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
                     future.result()
                 except Exception as e:
                     print(f"Error occurred: {e}")
-                    
+
     def init_db(self, file_name: str) -> None:
         # if collection exist, do skip
         existing_collections = self.client.list_collections()
@@ -134,25 +150,24 @@ class ChromaRetrieverRepository(RetrieverRepository):
         file_path = os.path.join(base_dir, file_name)
 
         self.__process_file(file_path, collection)
-        
-        #save cache data to file
+
+        # save cache data to file
         self.cache_repo.save_embedding_cache_to_file()
 
         print("✅ chromadb init done")
 
     def search(self, query_vector: list[float], top_k: int = 5) -> list[dict[str, Any]]:
         collection = self.client.get_collection(name="naver_smart_store_qna")
-        result = collection.query(
-            query_embeddings=query_vector,
-            n_results=top_k
-        )
-        
+        result = collection.query(query_embeddings=query_vector, n_results=top_k)
+
         results = []
         for i in range(len(result["documents"][0])):
-            results.append({
-                "document": result["documents"][0][i],
-                "metadata": result["metadatas"][0][i],
-                "score": result["distances"][0][i],
-            })
+            results.append(
+                {
+                    "document": result["documents"][0][i],
+                    "metadata": result["metadatas"][0][i],
+                    "score": result["distances"][0][i],
+                }
+            )
 
         return results
