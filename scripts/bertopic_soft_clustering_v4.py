@@ -378,7 +378,7 @@ with open(input_file, encoding="utf-8") as f:
 # BERTopic clustering
 embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 vectorizer_model = CountVectorizer(
-    ngram_range=(1, 2), stop_words=korean_stopwords, min_df=4, max_df=0.9
+    ngram_range=(1, 2), stop_words=korean_stopwords, min_df=2, max_df=0.9
 )
 
 topic_model = BERTopic(

@@ -156,7 +156,7 @@ class ChromaRetrieverRepository(RetrieverRepository):
 
         print("✅ chromadb init done")
 
-    def search(self, query_vector: list[float], top_k: int = 5) -> list[dict[str, Any]]:
+    def search(self, query_vector: list[float], top_k: int = 20) -> list[dict[str, Any]]:
         collection = self.client.get_collection(name="naver_smart_store_qna")
         result = collection.query(query_embeddings=query_vector, n_results=top_k)
 
