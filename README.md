@@ -55,3 +55,5 @@ poetry run python example/start_session.py
 poetry run python example/request_to_chatbot.py --session_id="..." --content="..."
 ```
 
+# System Components
+![image](https://github.com/user-attachments/assets/7dd81cf4-0eca-454f-b0e1-d470c0a4064b)
