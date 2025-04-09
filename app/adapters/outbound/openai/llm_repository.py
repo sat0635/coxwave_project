@@ -3,16 +3,14 @@ import json
 from openai import OpenAI
 
 from app.application.ports.llm_repository import LLMRepository, StructuredReplyResponse
-from app.application.ports.message_repository import MessageRepository
 from app.domain.constant.chat_role import ChatRole
 from app.domain.constant.message_type import MessageType
 
 
 class OpenaiLLMRepository(LLMRepository):
-    def __init__(self, api_key: str, model: str, message_repo: MessageRepository):
+    def __init__(self, api_key: str, model: str):
         self.client = OpenAI(api_key=api_key)
         self.model = model
-        self.message_repo = message_repo
 
     def __convert_db_messages_to_llm_chat_messages(self, messages: list) -> list:
         message_type_role_map = {
