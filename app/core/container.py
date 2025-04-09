@@ -37,7 +37,6 @@ class Container(containers.DeclarativeContainer):
         OpenaiLLMRepository,
         api_key=settings.openai_api_key,
         model=settings.llm_model,
-        message_repo=message_repo,
     )
 
     # Services

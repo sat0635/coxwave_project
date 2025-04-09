@@ -12,10 +12,9 @@ from app.domain.session import Session
 class InMemorySessionRepository(SessionRepository):
     def __init__(self, session_secret_key: str):
         self.sessions = {}
-        self.session_secret_key = session_secret_key
         self.fernet = Fernet(
             base64.urlsafe_b64encode(
-                hashlib.sha256(self.session_secret_key.encode()).digest()
+                hashlib.sha256(session_secret_key.encode()).digest()
             )
         )
 
